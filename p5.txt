@@ -100,9 +100,9 @@ protocolo STUN.
 realizar una llamada. Por eso, todo usuario registra su localización en un servidor Registrar. El Registrar guarda información sobre los
 usuarios en un servidor de localización que puede ser utilizado para localizar usuarios.
 * ¿Qué dirección IP tiene el servidor Registrar?
-    · Sent-by Address: 83.36.48.212
+    · La 86.64.162.35 y en el campo UDP encontramos. Sent-by Address: 83.36.48.212
 * ¿A qué puerto (del servidor Registrar) se envı́an los paquetes SIP?
-    · 5060
+    · 5060 Sent-by port: 5063
 * ¿Qué método SIP utiliza el UA para registrarse?
     · El método REGISTER.
 * Además de REGISTER, ¿podrı́as decir qué instrucciones SIP entiende el UA?
@@ -111,12 +111,17 @@ usuarios en un servidor de localización que puede ser utilizado para localizar
 
 9. Fijémonos en las tramas siguientes a la número 46:
 * ¿Se registra con éxito en el primer intento?
+    · No, en el primer intento sale 401, y pide autorización.
 * ¿Cómo sabemos si el registro se ha realizado correctamente o no?
+    · Porque llegaría el mensaje 200 OK y no el 401.
 * ¿Podrı́as identificar las diferencias entre el primer intento y el
 segundo de registro? (fı́jate en el tamaño de los paquetes y mira
 a qué se debe el cambio)
+    · El primer intento tiene un length de 523, mientras que el segundo de 712
+      esto se debe a que el segundo si tiene campo Authorization: Digest username="grex", realm="ekiga.net"...
 * ¿Cuánto es el valor del tiempo de expiración de la sesión? Indica
 las unidades.
+    · Expires: 3600
 
 10. Una vez registrados, podemos efectuar una llamada. Vamos a probar
 con el servicio de eco de Ekiga que nos permite comprobar si nos
@@ -124,49 +129,77 @@ hemos conectado correctamente. El servicio de eco tiene la dirección
 sip:500@ekiga.net. Veamos el INVITE de cerca.
 * ¿Puede verse el nombre del que efectúa la llamada, ası́ como su
 dirección SIP?
+    · Si, From: "Gregorio Robles" <sip:grex@ekiga.net>;tag=621be956-b29e-db11-82ee-0013ce8c7c2b
+
 * ¿Qué es lo que contiene el cuerpo de la trama? ¿En qué formato/protocolo está?
+    · Contiene la información de la sesecion utilizando el formato SDP.
 * ¿Tiene éxito el primer intento? ¿Cómo lo sabes?
+    · No ya que en el siguiente paquete el servidor responde con un 407 proxy-autorization.
 * ¿En qué se diferencia el segundo INVITE más abajo del primero?
+    · En que este si lleva el proxy-Autorization dando autorizacion para conectarnos.
 ¿A qué crees que se debe esto?
+    · Debido a que cuando rechazo el primero pidió una auntentificación.
 
 11. Una vez conectado, estudia el intercambio de tramas.
 * ¿Qué protocolo(s) se utiliza(n)? ¿Para qué sirven estos protocolos?
+    · El protocolo RTP para envio de contenido en tiempo real (este caso audio), y un nivel por debajo 
+      de RTP utiliza H.261(ITU). codec de video comprimido.
 * ¿Cuál es el tamaño de paquete de los mismos?
+    · Los paquetes RTP tienen tamaño fijo de 214 bytes, mientras que los de H.261 son variables, 
+      con un primero de mas de 1000 byes y un segundo entre 200 y 800 bytes.
+
 * ¿Se utilizan bits de padding?
+    · No, ya que en los paquetes encontramos 0 = padding: False
+
 * ¿Cuál es la periodicidad de los paquetes (en origen; nota que la
 captura es en destino)?
+    · Para RTP, unos 0.024 seg y para H.261 0.26 seg
 * ¿Cuántos bits/segundo se envı́an?
+        Unos 214 bytes cada 0.24 s es decir unos 71 bits/segundo 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
 12. Vamos a ver más a fondo el intercambio RTP. En Telephony hay una
 opción RTP. Empecemos mirando los flujos RTP.
 * ¿Cuántos flujos hay? ¿por qué?
+    · Hay dos flujos de dos direcciones diferentes, una corresponde con el audio en el RTP (G.711) y otro con el vídeo H.261
 * ¿Cuántos paquetes se pierden?
+    · el 0%, es decir ningun paquete.
 * ¿Cuál es el valor máximo del delta? ¿Y qué es lo que significa el
 valor de delta?
+    · 1290.479 ms(h261) y 1290.444 ms (audio). Es el tiempo máximo entre un paquete y el anterior
 * ¿Cuáles son los valores de jitter (medio y máximo)? ¿Qué
 quiere decir eso? ¿Crees que estamos ante una conversación de
 calidad?
+    · Para Video:h261 -> Max - 183.096 ms. Med - 153.24 ms, para Audio: g711 -> Max - 119.635 ms. Med - 42.5 ms.
+ 	  mide la variacion en los retardos, la calidad es aceptable ya que no supera 300ms aunque no muy optima.
 
 13. Elige un paquete RTP de audio. Analiza el flujo de audio en Telephony
 -> RTP -> Stream Analysis.
 * ¿Cuánto valen el delta y el jitter para el primer paquete que
 ha llegado?
+    · Ambos valen 0ms ya que es el primer paquete.
 * ¿Podemos saber si éste es el primer paquete que nos han enviado?
+    · Claro ya que al ser la delta cero será el primer paquete.
 * Los valores de jitter son menores de 10ms hasta un paquete
 dado. ¿Cuál?
+    · En el 247 sube a 38.82 ms 
 * ¿A qué se debe el cambio tan brusco del jitter?
+    · Se debe al aumento de la delta por tener menor ancho de banda la delta es ahora de 554.74ms.
 * ¿Es comparable el cambio en el valor de jitter con el del delta?
 ¿Cual es más grande?
+    · Ambos cambiarán ya que el jitter depende de la delta siendo mayor el cambio esta.
 
 14. En Telephony selecciona el menú VoIP calls. Verás que se lista la
 llamada de voz IP capturada en una ventana emergente. Selecciona
 esa llamada y pulsa el botón Graph.
 * ¿Cuánto dura la conversación?
+    · duration 24 sec.
 * ¿Cuáles son sus SSRC? ¿Por qué hay varios SSRCs? ¿Hay CSRCs?
+    · Uno para audio 0xbf4afd37 y otro para video 0x43306582, no hay ningún CSRC por lo que cada uno ira por su lado.
 
 15. Identifica la trama donde se finaliza la conversación.
 * ¿Qué método SIP se utiliza?
+    · El método BYE
 * ¿En qué trama(s)?
 * ¿Por qué crees que se envı́a varias veces?
 
