@@ -79,28 +79,34 @@ que ha lanzado Ekiga?
 * ¿Qué user agent (UA) la está pidiendo?
    · User-Agent: Ekiga\r\n
 * ¿Qué devuelve el servidor?
-    · responde con un HTTP y en line-based text data envia: 83.36.48.212, que es la ip de 
-      direccion pública donde se solicita usuario y password 
+    · Responde con un HTTP y en line-based text data envia: 83.36.48.212, que es la ip de 
+      direccion pública donde se solicita usuario y password. 
 
 * Si lanzamos el navegador web, por ejemplo, Mozilla Firefox, y
 vamos a la misma URL, ¿qué recibimos? ¿Qué es, entonces, lo
 que está respondiendo el servidor?
+    · recibimos una Ip pero no la de la captura sino la ip de nuestro equipo, 212.128.254.151.
 
 7. Hasta la trama 45 se puede observar una secuencia de tramas del
 protocolo STUN.
 * ¿Por qué se hace uso de este protocolo?
+    · Es un protocolo que determina si se esta usando NAT o no, como podemos observar en la trama 
+      Simple trasversal of UDP Through NAT, conteniendo el tipo de NAT, en Attributes las diferentes
+      IPs MAPPED, SOURCE, CHANGED, XOR_MAPPED, SERVER localizados el mensaje Binding Response.
 * ¿Podrı́as decir si estamos tras un NAT o no?
+    · Si ya que estamos tras un IP privada y somos los que pedimos al router atarnos a el.
 
 8. La trama 46 es la primera trama SIP. En un entorno como el de Internet, lo habitual es desconocer la dirección IP de la otra parte al
-realizar una llamada. Por eso, todo usuario registra su localización en
-un servidor Registrar. El Registrar guarda información sobre los
-usuarios en un servidor de localización que puede ser utilizado para
-localizar usuarios.
+realizar una llamada. Por eso, todo usuario registra su localización en un servidor Registrar. El Registrar guarda información sobre los
+usuarios en un servidor de localización que puede ser utilizado para localizar usuarios.
 * ¿Qué dirección IP tiene el servidor Registrar?
-* ¿A qué puerto (del servidor Registrar) se envı́an los paquetes
-SIP?
+    · Sent-by Address: 83.36.48.212
+* ¿A qué puerto (del servidor Registrar) se envı́an los paquetes SIP?
+    · 5060
 * ¿Qué método SIP utiliza el UA para registrarse?
+    · El método REGISTER.
 * Además de REGISTER, ¿podrı́as decir qué instrucciones SIP entiende el UA?
+    · Allow: INVITE,ACK,OPTIONS,BYE,CANCEL,NOTIFY,REFER,MESSAGE
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
 
 9. Fijémonos en las tramas siguientes a la número 46:
